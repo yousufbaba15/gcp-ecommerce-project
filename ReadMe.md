@@ -1,23 +1,22 @@
-E-COMMERCE END-TO-END DATA ENGINEERING PROJECT IMPLEMENTATION
+# E-Commerce End-to-End Data Engineering Project
 
+## 📌 Architecture Overview
 
-#----------------------------
-# ARCHITECTURE USED:
-#----------------------------
-
+```
 GCS (CSV Files)
      ↓
-Dataflow (Datflow Flex Template + Python)
+Dataflow (Flex Template + Python)
      ↓
 BigQuery (Dataset + Tables)
      ↓
 Cloud Scheduler (Automation)
+```
 
+---
 
-#----------------------------
-# GCS BUCKET STRUCTURE:
-#----------------------------
+## 📂 GCS Bucket Structure
 
+```
 gs://hcl-de-bank-landing/
 │
 ├── raw/
@@ -28,65 +27,72 @@ gs://hcl-de-bank-landing/
 ├── temp/
 ├── staging/
 └── templates/
+```
 
+---
 
-#----------------------------
-# DATAFLOW PYTHON CODE:
-#----------------------------
+## ⚙️ Dataflow Pipeline (Python)
 
-Checkout the complete code in gcs_to_bq_pipeline.py file
-✔ Reads CSV from GCS
-✔ Creates dataset & tables if not exist
-✔ Appends data to BigQuery
+Refer to: `gcs_to_bq_pipeline.py`
 
-RUN DATAFLOW JOB MANUALLY TO TEST 
-Terminal CMD
-gcloud dataflow flex-template run "bank-etl-test-$(date +%s)" \
---template-file-gcs-location gs://hcl-de-bank-landing/templates/bank-etl.json \
---region us-central1 \
---worker-zone us-central1-a \
---temp-location gs://hcl-de-bank-landing/temp \
---staging-location gs://hcl-de-bank-landing/staging \
---num-workers 1 \
---max-workers 1 \
---worker-machine-type e2-small
+### Features
+- Reads CSV files from GCS
+- Creates BigQuery dataset & tables (if not exists)
+- Appends data to BigQuery
 
-#----------------------------
-# DATAFLOW TEMPLATE SETUP
-#----------------------------
+---
 
-✔ Create a Dockerfile (setup in Dockerfile)
-✔ Build and push image
-   Terminal CMD
-   gcloud builds submit --tag gcr.io/hcl-de-bank/dataflow-flex
+## ▶️ Run Dataflow Job (Manual Testing)
 
-✔ Create Flex Template
-   Terminal CMD
-   gcloud dataflow flex-template build gs://hcl-de-bank-landing/templates/bank-etl.json \
-    --image gcr.io/hcl-de-bank/dataflow-flex \
-    --sdk-language PYTHON \
-    --metadata-file metadata.json
+```bash
+gcloud dataflow flex-template run "bank-etl-test-$(date +%s)" --template-file-gcs-location gs://hcl-de-bank-landing/templates/bank-etl.json --region us-central1 --worker-zone us-central1-a --temp-location gs://hcl-de-bank-landing/temp --staging-location gs://hcl-de-bank-landing/staging --num-workers 1 --max-workers 1 --worker-machine-type e2-small
+```
 
-#----------------------------
-# CLOUD SCHEDULER SETUP
-#----------------------------
+---
 
-BASIC CONFIGURATIONS
+## 🐳 Dataflow Flex Template Setup
+
+### 1. Build Docker Image
+```bash
+gcloud builds submit --tag gcr.io/hcl-de-bank/dataflow-flex
+```
+
+### 2. Create Flex Template
+```bash
+gcloud dataflow flex-template build gs://hcl-de-bank-landing/templates/bank-etl.json --image gcr.io/hcl-de-bank/dataflow-flex --sdk-language PYTHON --metadata-file metadata.json
+```
+
+---
+
+## ⏰ Cloud Scheduler Configuration
+
+### Basic Configuration
+
 | Field     | Value            |
-| --------- | ---------------- |
+|----------|------------------|
 | Name      | dataflow-etl-job |
 | Region    | us-central1      |
 | Frequency | */10 * * * *     |
 
-TARGET VARAIABLES
+### Target Configuration
+
 | Field  | Value |
-| ------ | ----- |
+|--------|-------|
 | Type   | HTTP  |
 | Method | POST  |
 
-URL: https://dataflow.googleapis.com/v1b3/projects/hcl-de-bank/locations/us-central1/flexTemplates:launch
-HEADER: Content-Type: application/json
-BODY: 
+### Endpoint URL
+```
+https://dataflow.googleapis.com/v1b3/projects/hcl-de-bank/locations/us-central1/flexTemplates:launch
+```
+
+### Headers
+```
+Content-Type: application/json
+```
+
+### Request Body
+```json
 {
   "launchParameter": {
     "jobName": "bank-etl-job",
@@ -97,12 +103,26 @@ BODY:
     }
   }
 }
+```
 
-AUTH:
-| Field           | Value                                                                                                           |
-| --------------- | --------------------------------------------------------------------------------------------------------------- |
-| Auth Type       | OAuth Token                                                                                                     |
+---
+
+## 🔐 Authentication
+
+| Field           | Value |
+|----------------|-------|
+| Auth Type       | OAuth Token |
 | Service Account | computeengine-default-serviceaccount.gserviceaccount.com |
-| Scope           | [https://www.googleapis.com/auth/cloud-platform](https://www.googleapis.com/auth/cloud-platform)                |
+| Scope           | https://www.googleapis.com/auth/cloud-platform |
 
+---
 
+## ✅ Summary
+
+This project implements a fully automated ETL pipeline using:
+- Google Cloud Storage (data ingestion)
+- Dataflow (processing)
+- BigQuery (storage & analytics)
+- Cloud Scheduler (automation)
+
+The pipeline supports scalable, repeatable, and production-ready data ingestion workflows.
