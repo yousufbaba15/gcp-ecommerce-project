@@ -36,6 +36,7 @@ gs://hcl-de-bank-landing/
 Refer to: `gcs_to_bq_pipeline.py`
 
 ### Features
+
 - Reads CSV files from GCS
 - Creates BigQuery dataset & tables (if not exists)
 - Appends data to BigQuery
@@ -52,12 +53,18 @@ gcloud dataflow flex-template run "bank-etl-test-$(date +%s)" --template-file-gc
 
 ## 🐳 Dataflow Flex Template Setup
 
-### 1. Build Docker Image
+### 1. Build Dockerfile
+
+- Check Dockerfile for dependencies and env setup
+
+### 2. Build Docker Image
+
 ```bash
 gcloud builds submit --tag gcr.io/hcl-de-bank/dataflow-flex
 ```
 
-### 2. Create Flex Template
+### 3. Create Flex Template
+
 ```bash
 gcloud dataflow flex-template build gs://hcl-de-bank-landing/templates/bank-etl.json --image gcr.io/hcl-de-bank/dataflow-flex --sdk-language PYTHON --metadata-file metadata.json
 ```
@@ -69,29 +76,32 @@ gcloud dataflow flex-template build gs://hcl-de-bank-landing/templates/bank-etl.
 ### Basic Configuration
 
 | Field     | Value            |
-|----------|------------------|
+| --------- | ---------------- |
 | Name      | dataflow-etl-job |
 | Region    | us-central1      |
-| Frequency | */10 * * * *     |
+| Frequency | _/10 _ \* \* \*  |
 
 ### Target Configuration
 
 | Field  | Value |
-|--------|-------|
+| ------ | ----- |
 | Type   | HTTP  |
 | Method | POST  |
 
 ### Endpoint URL
+
 ```
 https://dataflow.googleapis.com/v1b3/projects/hcl-de-bank/locations/us-central1/flexTemplates:launch
 ```
 
 ### Headers
+
 ```
 Content-Type: application/json
 ```
 
 ### Request Body
+
 ```json
 {
   "launchParameter": {
@@ -109,17 +119,18 @@ Content-Type: application/json
 
 ## 🔐 Authentication
 
-| Field           | Value |
-|----------------|-------|
-| Auth Type       | OAuth Token |
+| Field           | Value                                                    |
+| --------------- | -------------------------------------------------------- |
+| Auth Type       | OAuth Token                                              |
 | Service Account | computeengine-default-serviceaccount.gserviceaccount.com |
-| Scope           | https://www.googleapis.com/auth/cloud-platform |
+| Scope           | https://www.googleapis.com/auth/cloud-platform           |
 
 ---
 
 ## ✅ Summary
 
 This project implements a fully automated ETL pipeline using:
+
 - Google Cloud Storage (data ingestion)
 - Dataflow (processing)
 - BigQuery (storage & analytics)
